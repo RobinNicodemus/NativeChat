@@ -46,7 +46,11 @@ export default class Chat extends React.Component {
                 this.referenceMessages = firebase.firestore().collection('messages');
                 this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
                     if (!user) {
-                        await firebase.auth().signInAnonymously();
+                        try {
+                            await firebase.auth().signInAnonymously();
+                        } catch (error) {
+                            console.log(error.message)
+                        }
                     }
 
                     //update user state with currently active user data
@@ -156,11 +160,11 @@ export default class Chat extends React.Component {
         }
     }
 
-    async saveMessages() {
+    async saveMessages(messages = this.state.messages) {
         try {
-            await AsyncStorage.setItem('messages', JSON.stringify(this.state.messages));
+            await AsyncStorage.setItem('messages', JSON.stringify(messages));
         } catch (error) {
-            console.log(error.message);
+            console.log(error);
         }
     }
 
@@ -188,38 +192,9 @@ export default class Chat extends React.Component {
             messages,
         });
     };
-    /*  this.setState({
-         messages: [
-             {
-                 _id: 1,
-                 text: 'Hello developer',
-                 createdAt: new Date(),
-                 user: {
-                     _id: 2,
-                     name: 'React Native',
-                     avatar: 'https://placeimg.com/140/140/any',
-                 },
-             },
-             {
-                 _id: 2,
-                 text: 'Welcome to the chat, ' + this.props.route.params.name + '!',
-                 createdAt: new Date(),
-                 system: true,
-             },
-              'Hello expo!',
-                 creat{
-                 _id: 3,
-                 text:edAt: new Date(),
-                 user: {
-                     _id: 1,
-                 },
-             },
-         ],
-     }) */
 
     //document _id should be added automatically by firestore
-    addMessage() {
-        const message = this.state.messages[0];
+    addMessage = (message = this.state.messages[0]) => {
         this.referenceMessages.add({
             _id: message._id,
             text: message.text || "",
